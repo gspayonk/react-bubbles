@@ -12,7 +12,7 @@ const ColorList = ({ colors, updateColors }) => {
   const [colorToEdit, setColorToEdit] = useState(initialColor);
 
   //stretch adding colors
-  const [colorAdd, setColorAdd] = useState(false);
+  const [colorAdd, setColorAdd] = useState('');
 
   const editColor = color => {
     setEditing(true);
@@ -64,9 +64,10 @@ const ColorList = ({ colors, updateColors }) => {
         .then(response => {
           updateColors([...colors, colorAdd]);
           setColorAdd(initialColor);
+          console.log('response', response);
         })
 
-        .catch(error => console.log(error.response));
+        .catch(error => console.log(error));
 
   }
 
@@ -149,7 +150,7 @@ const ColorList = ({ colors, updateColors }) => {
                     code: { hex: event.target.value }
                   })
                 }
-                value = {colorAdd.color}
+                value = {colorAdd.hex}
               />
             </label>
 
