@@ -12,7 +12,6 @@ const ColorList = ({ colors, updateColors }) => {
   const [colorToEdit, setColorToEdit] = useState(initialColor);
 
   //stretch adding colors
-  const [adding, setAdd] = useState(false);
   const [colorAdd, setColorAdd] = useState(false);
 
   const editColor = color => {
@@ -29,32 +28,27 @@ const ColorList = ({ colors, updateColors }) => {
     axiosWithAuth()
       .put(`http://localhost:5000/api/colors/${colorToEdit.id}`, colorToEdit)
   
-      .then(response => {
-        const updatedList = colors.map(color => {
-          if(color.id === colorToEdit.id) {
-            return response.data
-          } else {
-            return color
-          }
-        })
-        updateColors(updatedList);
-      })
+      .then(response => 
+        updateColors(colors.map(color => {
+          return color.id === colorToEdit.id ? colorToEdit : color;
+          })
+        )
+      )
 
       .catch(error => console.log(error.response));
-    setEditing(false);
   };
 
 
-  const deleteColor = color => {
+  const deleteColor = (color, event) => {
     // make a delete request to delete this color
+    event.stopPropagation();
 
     axiosWithAuth()
       .delete(`http://localhost:5000/api/colors/${color.id}`)
 
       .then(response => {
-        const updatedList = colors.filter(item => item.id !== color.id);
+        updateColors(colors.filter(item => item.id !== color.id));
         return color.id === colorToEdit.id ? setEditing(false) : null;
-        // updateColors(updatedList);
       })
 
       .catch(error => console.log(error.response));
@@ -63,8 +57,6 @@ const ColorList = ({ colors, updateColors }) => {
   //stretch adding a color
   const addNewColor = event => {
     event.preventDefault();
-
-    if (colorAdd.color !== '' && colorAdd.code.hex !== '') {
 
       axiosWithAuth()
         .post(`http://localhost:5000/api/colors`, colorAdd)
@@ -75,7 +67,7 @@ const ColorList = ({ colors, updateColors }) => {
         })
 
         .catch(error => console.log(error.response));
-    }
+
   }
 
   return (
@@ -83,9 +75,9 @@ const ColorList = ({ colors, updateColors }) => {
       <p>colors</p>
       <ul>
         {colors.map(color => (
-          <li key = {color.color} onClick={() => { if (adding) setAdd(false); editColor(color)}}>
+          <li key = {color.color} onClick = {() => editColor(color)}>
             <span>
-              <span className = 'delete' onClick={() => deleteColor(color)}>
+              <span className = 'delete' onClick = {event => deleteColor(color, event)}>
                 x
               </span>{' '}
               {color.color}
@@ -98,7 +90,6 @@ const ColorList = ({ colors, updateColors }) => {
           </li>
         ))}
       </ul>
-      <button onClick={() => {if (editing) setEditing(false); setAdd(true)}}>Add Color</button>
 
       {editing && (
         <form onSubmit = {saveEdit}>
@@ -128,7 +119,7 @@ const ColorList = ({ colors, updateColors }) => {
 
           <div className = 'button-row'>
             <button type = 'submit'>Save</button>
-            <button onClick={() => setEditing(false)}>Cancel Add</button>
+            <button onClick={() => setEditing(false)}>Cancel</button>
           </div>
         </form>
       )}
@@ -164,7 +155,7 @@ const ColorList = ({ colors, updateColors }) => {
 
             <div className = 'button-row'>
               <button type = 'submit'>Add Color</button>
-              <button onClick={() => setAdd(false)}>Cancel Add</button>
+
             </div>
         </form>
       
